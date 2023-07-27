@@ -17,7 +17,7 @@ enum Agent8State
 struct GameState
 {
 	int score = 0;
-	Agent8State agentSate = STATE_APPEAR;
+	Agent8State agentState = STATE_APPEAR;
 };
 
 GameState gameState;
@@ -120,11 +120,11 @@ void UpdateTools()
 	{
 		GameObject& obj_tool = Play::GetGameObject( id );
 
-		if ( Play::IsColliding( obj_tool, obj_agent8 ) )
+		if (gameState.agentState !=STATE_DEAD && Play::IsColliding(obj_tool,obj_agent8))
 		{
 			Play::StopAudioLoop( "music" );
 			Play::PlayAudio( "die" );
-			obj_agent8.pos = { -100, -100 };
+			gameState.agentState = STATE_DEAD;
 		}
 		Play::UpdateGameObject( obj_tool );
 		if (Play::IsLeavingDisplayArea( obj_tool , Play::VERTICAL ) )
@@ -155,7 +155,7 @@ void HandlePlayerControls()
 	{
 		if (obj_agent8.velocity.y > 5)
 		{
-			gameState.agentSate = STATE_HALT;
+			gameState.agentState = STATE_HALT;
 			Play::SetSprite( obj_agent8, "agent8_halt", 0.333f);
 			obj_agent8.acceleration = { 0, 0 };
 		}
@@ -292,6 +292,53 @@ void UpdateDestroyed()
 void UpdateAgent8()
 {
 	GameObject& obj_agent8 = Play::GetGameObjectByType( TYPE_AGENT8 );
+
+	switch ( gameState.agentState)
+	{
+	   case STATE_APPEAR:
+		   obj_agent8.velocity = { 0, 12 };
+		   obj_agent8.acceleration = { 0, 0.5f };
+		   Play::SetSprite(obj_agent8, "agent8_fall", 0);
+		   obj_agent8.rotation = 0;
+		   if (obj_agent8.pos.y >= DISPLAY_HEIGHT / 3)
+			   gameState.agentState = STATE_PLAY;
+		   break;
+
+	   case STATE_HALT:
+		   obj_agent8.velocity *= 0.9f;
+		   if (Play::IsAnimationComplete(obj_agent8))
+			   gameState.agentState = STATE_PLAY;
+		   break;
+
+	   case STATE_PLAY:
+		   HandlePlayerControls();
+		   break;
+
+	   case STATE_DEAD:
+		   obj_agent8.acceleration = { -0.3f , 0.5f };
+		   obj_agent8.rotation += 0.025f;
+		   if (Play::KeyPressed(VK_SPACE) == true)
+		   {
+			   gameState.agentState = STATE_APPEAR;
+			   obj_agent8.pos = { 115, 0 };
+			   obj_agent8.velocity = { 0, 0 };
+			   obj_agent8.frame = 0;
+			   Play::StartAudioLoop("music");
+			   gameState.score = 0;
+
+			   for (int id_obj : Play::CollectGameObjectIDsByType(TYPE_TOOL))
+				   Play::GetGameObject(id_obj).type = TYPE_DESTROYED;
+		   }
+		   break;
+	}//this ends the switch for agent8 state machines
+
+	Play::UpdateGameObject(obj_agent8);
+
+	if (Play::IsLeavingDisplayArea(obj_agent8) && gameState.agentState != STATE_DEAD)
+		obj_agent8.pos = obj_agent8.oldPos;
+
+	Play::DrawLine({ obj_agent8.pos.x, 0 }, obj_agent8.pos, Play::cWhite);
+	Play::DrawObjectRotated(obj_agent8);
 }
 
 // Gets called once when the player quits the game 
