@@ -292,49 +292,8 @@ void UpdateDestroyed()
 void UpdateAgent8()
 {
 	GameObject& obj_agent8 = Play::GetGameObjectByType( TYPE_AGENT8 );
-
-	switch ( gameState.agentState )
-	{
-	case STATE_APPEAR:
-		obj_agent8.velocity = { 0, 12 };
-		obj_agent8.acceleration = { 0, 0.5f };
-		Play::SetSprite(obj_agent8, "agent8_fall", 0);
-		obj_agent8.rotation = 0;
-		if (obj_agent8.pos.y >= DISPLAY_HEIGHT / 3)
-			gameState.agentState = STATE_PLAY;
-		break;
-	case STATE_HALT:
-		obj_agent8.velocity *= 0.9f;
-		if (Play::IsAnimationComplete(obj_agent8))
-			gameState.agentState = STATE_PLAY;
-		break;
-	case STATE_PLAY:
-		HandlePlayerControls();
-		break;
-	case STATE_DEAD:
-		obj_agent8.acceleration = { -0.3f , 0.5f };
-		obj_agent8.rotation += 0.25f;
-		if (Play::KeyPressed(VK_SPACE) == true)
-		{
-			gameState.agentState = STATE_APPEAR;
-			obj_agent8.pos = { 115, 0 };
-			obj_agent8.velocity = { 0, 0 };
-			obj_agent8.frame = 0;
-			Play::StartAudioLoop("music");
-			gameState.score = 0;
-			for (int id_obj : Play::CollectGameObjectIDsByType(TYPE_TOOL))
-				Play::GetGameObject(id_obj).type = TYPE_DESTROYED;
-		}
-		break;
-	} // End of switch on Agent8State
-	Play::UpdateGameObject(obj_agent8);
-	if (Play::IsLeavingDisplayArea(obj_agent8) && gameState.agentState != STATE_DEAD)
-		obj_agent8.pos = obj_agent8.oldPos;
-	Play::DrawLine({ obj_agent8.pos.x, 0 }, obj_agent8.pos, Play::cWhite);
-	Play::DrawObjectRotated(obj_agent8);
 }
 
-Listing 14: Modifications to the program to implement the state - based player upda
 // Gets called once when the player quits the game 
 int MainGameExit( void )
 {
