@@ -171,7 +171,7 @@ void HandlePlayerControls()
 		Vector2D firePos = obj_agent8.pos + Vector2D(155, -75);
 		int id = Play::CreateGameObject(TYPE_LASER, firePos, 30, "laser");
 		Play::GetGameObject(id).velocity = { 32, 0 };
-		Play::PlayAudio( "shoot" );
+		Play::PlayAudio( "shoot" ); //my custom laser shot but under the same "shoot" name
 	}
 
 	Play::UpdateGameObject(obj_agent8);
@@ -204,7 +204,7 @@ void UpdateCoinsAndStars()
 			}
 			hasCollided = true;
 			gameState.score += 500;
-			Play::PlayAudio("collect");
+			Play::PlayAudio("collect");//my custom audio sfx but still under the "collect" name
 		}
 
 		Play::UpdateGameObject(obj_coin);
